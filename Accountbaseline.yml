@@ -1,0 +1,275 @@
+# /*
+#  * Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#  *
+#  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+#  * software and associated documentation files (the "Software"), to deal in the Software
+#  * without restriction, including without limitation the rights to use, copy, modify,
+#  * merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+#  * permit persons to whom the Software is furnished to do so.
+#  *
+#  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+#  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+#  * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+#  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+#  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+#  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#  */
+
+
+
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: Baseline IAM resources for new account
+
+Parameters:
+  AdminUsername:
+    Type: String
+    Description: Username for the Admin user
+  AdminPassword:
+    Type: String
+    NoEcho: true
+    MinLength: 1
+    Description: Password for the Admin user
+  NewRoleArn:
+    Type: String
+    Description: ARN of the NewRole
+
+
+Resources:
+  Admin:
+    Type: 'AWS::IAM::User'
+    Properties:
+      UserName: !Ref AdminUsername
+      Path: /
+      LoginProfile:
+        Password: !Ref AdminPassword
+
+  Administrators:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AdministratorAccess"
+      GroupName: Administrators
+      Path: /
+
+
+  AddUserToGroup:
+    Type: 'AWS::IAM::UserToGroupAddition'
+    Properties:
+      GroupName: !Ref Administrators
+      Users:
+        - !Ref Admin
+
+  EC2LinuxProduct:
+    Type: "AWS::ServiceCatalog::CloudFormationProduct"
+    Properties:
+      AcceptLanguage: "en"
+      Description: "This product builds one Amazon Linux EC2 instance and create a SSM patch baseline, maintenance window, and patch task to scan for and install operating system updates the EC2 instance."
+      Distributor: "Amazon"
+      Name: "Amazon Elastic Compute Cloud (EC2) Linux"
+      Owner: "IT Services"
+      SupportEmail: "support@yourcompany.com"
+      SupportUrl: "https://www.amazon.com"
+      SupportDescription: "Support Description"
+      ProvisioningArtifactParameters:
+      -
+        Description: "June 2018"
+        Name: "June 2018"
+        Info:
+          LoadTemplateFromURL : "https://raw.githubusercontent.com/aws-samples/aws-service-catalog-reference-architectures/master/ec2/sc-ec2-linux-ra.json"
+
+  EC2WindowsProduct:
+    Type: "AWS::ServiceCatalog::CloudFormationProduct"
+    Properties:
+      AcceptLanguage: "en"
+      Description: "This product builds one Amazon Windows EC2 instance and create a SSM patch baseline, maintenance window, and patch task to scan for and install operating system updates the EC2 instance."
+      Distributor: "Amazon"
+      Name: "Amazon Elastic Compute Cloud (EC2) Windows"
+      Owner: "IT Services"
+      SupportEmail: "support@yourcompany.com"
+      SupportUrl: "https://www.amazon.com"
+      SupportDescription: "Support Description"
+      ProvisioningArtifactParameters:
+      -
+        Description: "June 2018"
+        Name: "June 2018"
+        Info:
+          LoadTemplateFromURL : "https://raw.githubusercontent.com/aws-samples/aws-service-catalog-reference-architectures/master/ec2/sc-ec2-windows-ra.yml"
+
+  VPCProduct:
+    Type: "AWS::ServiceCatalog::CloudFormationProduct"
+    Properties:
+      AcceptLanguage: "en"
+      Description: "This product builds one Amazon VPC with Public Subnets, Private Subnets, Route Tables, NAT Gateway and Internet Gateway"
+      Distributor: "Amazon"
+      Name: "Amazon VPC"
+      Owner: "IT Services"
+      SupportEmail: "support@yourcompany.com"
+      SupportUrl: "https://www.amazon.com"
+      SupportDescription: "Support Description"
+      ProvisioningArtifactParameters:
+      -
+        Description: "June 2018"
+        Name: "June 2018"
+        Info:
+          LoadTemplateFromURL : "https://raw.githubusercontent.com/aws-samples/aws-service-catalog-reference-architectures/master/vpc/sc-vpc-ra.json"
+
+  EMRProduct:
+    Type: "AWS::ServiceCatalog::CloudFormationProduct"
+    Properties:
+      AcceptLanguage: "en"
+      Description: "EMR product creates an Amazon Elastic MapReduce cluster in the VPC and Subnets selected by the end user. A remote access security group is also created to allow for a bastion host to connect to the instances used by EMR via SSH."
+      Distributor: "Amazon"
+      Name: "EMR Product"
+      Owner: "IT Services"
+      SupportEmail: "support@yourcompany.com"
+      SupportUrl: "https://www.amazon.com"
+      SupportDescription: "Support Description"
+      ProvisioningArtifactParameters:
+      -
+        Description: "June 2018"
+        Name: "June 2018"
+        Info:
+          LoadTemplateFromURL: "https://raw.githubusercontent.com/aws-samples/aws-service-catalog-reference-architectures/master/emr/sc-emr-ra.yml"
+
+  RDSMySQLProduct:
+    Type: "AWS::ServiceCatalog::CloudFormationProduct"
+    Properties:
+      AcceptLanguage: "en"
+      Description: "This product allows the user to launch a RDS MySQL DB as either single instance databases or multi-availability zone databases."
+      Distributor: "Amazon"
+      Name: "RDS MySQL Product"
+      Owner: "IT Services"
+      SupportEmail: "support@yourcompany.com"
+      SupportUrl: "https://www.amazon.com"
+      SupportDescription: "Support Description"
+      ProvisioningArtifactParameters:
+      -
+        Description: "June 2018"
+        Name: "June 2018"
+        Info:
+          LoadTemplateFromURL: "https://raw.githubusercontent.com/aws-samples/aws-service-catalog-reference-architectures/master/rds/sc-rds-mssql-ra.yml"
+
+  RDSMariaDBProduct:
+    Type: "AWS::ServiceCatalog::CloudFormationProduct"
+    Properties:
+      AcceptLanguage: "en"
+      Description: "This product allows the user to launch a RDS Maria DB as either single instance databases or multi-availability zone databases."
+      Distributor: "Amazon"
+      Name: RDS MariaDB Product
+      Owner: "IT Services"
+      SupportEmail: "support@yourcompany.com"
+      SupportUrl: "https://www.amazon.com"
+      SupportDescription: "Support Description"
+      ProvisioningArtifactParameters:
+      -
+        Description: "June 2018"
+        Name: "June 2018"
+        Info:
+          LoadTemplateFromURL: "https://raw.githubusercontent.com/aws-samples/aws-service-catalog-reference-architectures/master/rds/sc-rds-mariadb-ra.yml"
+
+  RDSPostGreSqlProduct:
+    Type: "AWS::ServiceCatalog::CloudFormationProduct"
+    Properties:
+      AcceptLanguage: "en"
+      Description: "This product allows the user to launch a RDS POSTGRE SQL as either single instance databases or multi-availability zone databases."
+      Distributor: "Amazon"
+      Name: "RDS POSTGRE SQL Product"
+      Owner: "IT Services"
+      SupportEmail: "support@yourcompany.com"
+      SupportUrl: "https://www.amazon.com"
+      SupportDescription: "Support Description"
+      ProvisioningArtifactParameters:
+      -
+        Description: "June 2018"
+        Name: "June 2018"
+        Info:
+          LoadTemplateFromURL: "https://raw.githubusercontent.com/aws-samples/aws-service-catalog-reference-architectures/master/rds/sc-rds-postgresql-ra.yml"
+
+  S3BucketProduct:
+    Type: "AWS::ServiceCatalog::CloudFormationProduct"
+    Properties:
+      AcceptLanguage: "en"
+      Description: "This product allows the user to create an S3 Bucket locking down the access to a specific CIDR."
+      Distributor: "Amazon"
+      Name: "S3 Bucket Product"
+      Owner: "IT Services"
+      SupportEmail: "support@yourcompany.com"
+      SupportUrl: "https://www.amazon.com"
+      SupportDescription: "Support Description"
+      ProvisioningArtifactParameters:
+      -
+        Description: "June 2018"
+        Name: "June 2018"
+        Info:
+          LoadTemplateFromURL: "https://raw.githubusercontent.com/aws-samples/aws-service-catalog-reference-architectures/master/s3/sc-s3-cidr-ra.yml"
+
+  BaselinePortfolio:
+    Type: "AWS::ServiceCatalog::Portfolio"
+    Properties:
+      DisplayName: "FirstPortfolio"
+      AcceptLanguage: "en"
+      ProviderName: "Amazon"
+
+  LinuxAssociation:
+    Type: "AWS::ServiceCatalog::PortfolioProductAssociation"
+    Properties:
+      ProductId: !Ref EC2LinuxProduct
+      PortfolioId: !Ref BaselinePortfolio
+
+  WindowsAssociation:
+    Type: "AWS::ServiceCatalog::PortfolioProductAssociation"
+    Properties:
+      ProductId: !Ref EC2WindowsProduct
+      PortfolioId: !Ref BaselinePortfolio
+
+  VPCAssociation:
+     Type: "AWS::ServiceCatalog::PortfolioProductAssociation"
+     Properties:
+       ProductId: !Ref VPCProduct
+       PortfolioId: !Ref BaselinePortfolio
+
+  EMRAssociation:
+     Type: "AWS::ServiceCatalog::PortfolioProductAssociation"
+     Properties:
+       ProductId: !Ref EMRProduct
+       PortfolioId: !Ref BaselinePortfolio
+
+  RDSMySQLAssociation:
+     Type: "AWS::ServiceCatalog::PortfolioProductAssociation"
+     Properties:
+       ProductId: !Ref RDSMySQLProduct
+       PortfolioId: !Ref BaselinePortfolio
+
+  RDSMariaDBAssociation:
+     Type: "AWS::ServiceCatalog::PortfolioProductAssociation"
+     Properties:
+       ProductId: !Ref RDSMariaDBProduct
+       PortfolioId: !Ref BaselinePortfolio
+
+  RDSPOSTGRESQLAssociation:
+     Type: "AWS::ServiceCatalog::PortfolioProductAssociation"
+     Properties:
+       ProductId: !Ref RDSPostGreSqlProduct
+       PortfolioId: !Ref BaselinePortfolio
+
+  S3BucketAssociation:
+     Type: "AWS::ServiceCatalog::PortfolioProductAssociation"
+     Properties:
+       ProductId: !Ref S3BucketProduct
+       PortfolioId: !Ref BaselinePortfolio
+
+  PortfolioPrincipalAssociationforAdmin:
+    Type: "AWS::ServiceCatalog::PortfolioPrincipalAssociation"
+    Properties:
+      PrincipalARN: !GetAtt Admin.Arn
+      PortfolioId: !Ref BaselinePortfolio
+      PrincipalType: IAM
+
+
+  PortfolioPrincipalAssociationforRole:
+    Type: "AWS::ServiceCatalog::PortfolioPrincipalAssociation"
+    Properties:
+      PrincipalARN: !Ref NewRoleArn
+      PortfolioId: !Ref BaselinePortfolio
+      PrincipalType: IAM

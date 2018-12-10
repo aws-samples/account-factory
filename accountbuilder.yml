@@ -1,0 +1,279 @@
+# /*
+#  * Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#  *
+#  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+#  * software and associated documentation files (the "Software"), to deal in the Software
+#  * without restriction, including without limitation the rights to use, copy, modify,
+#  * merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+#  * permit persons to whom the Software is furnished to do so.
+#  *
+#  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+#  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+#  * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+#  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+#  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+#  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#  */
+
+
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: Account Builder Template.
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: Parameters for the new created account
+        Parameters:
+          - accountemail
+          - organizationunitname
+          - accountname
+          - adminusername
+          - adminpassword
+          - stackname
+          - stackregion
+          - sourcebucket
+          - baselinetemplate
+          - newrole
+          - newrolepolicy
+      - Label:
+          default: Region Configuration
+        Parameters:
+          - AZ1Name
+          - AZ2Name
+      - Label:
+          default: VPC Configuration
+        Parameters:
+          - VPCCIDR
+          - VPCName
+      - Label:
+          default: Public Subnet Configuration
+        Parameters:
+          - SubnetAPublicCIDR
+          - SubnetBPublicCIDR
+      - Label:
+          default: Private Subnet Configuration
+        Parameters:
+          - SubnetAPrivateCIDR
+          - SubnetBPrivateCIDR
+
+Parameters:
+
+  accountemail:
+   Description: "Account Email address"
+   Type: String
+   AllowedPattern: ".+"
+   ConstraintDescription: "Must provide a valid email address"
+
+  accountname:
+    Description: "Name of the new AWS Account Name"
+    Type: String
+    AllowedPattern: ".+"
+    ConstraintDescription: "Provide the account name"
+
+  organizationunitname:
+    Description: "Name of the organization unit to which the account should be moved to."
+    Type: String
+    Default: "None"
+    AllowedPattern: ".+"
+
+
+  newrole:
+    Description: "Role that needs to be created in the newly built account. Use OrganizationAccountAccessRole for assuming roles into the new account,in case this role creation fails."
+    Default : "NewAccountAdminRole"
+    Type: String
+    AllowedPattern: ".+"
+
+
+  newrolepolicy:
+    Description: "Provide the policy to be attached to the above newrole. Json is only the valid format."
+    Default : '{"Version":"2012-10-17","Statement":{"Effect":"Allow","Action":"*","Resource":"*"}}'
+    Type: String
+    AllowedPattern: ".+"
+
+  adminusername:
+    Description: "An IAM user to be created in the created account."
+    Type: String
+    AllowedPattern: ".+"
+    ConstraintDescription: "Must provide a username"
+
+  adminpassword:
+    Description: "Password for the IAM user in the created accout."
+    Type: String
+    NoEcho: True
+    AllowedPattern: ".+"
+    ConstraintDescription: "Must provide a password for the username"
+
+  stackname:
+    Description: "Name given to the stack deployed in the created account."
+    Type: String
+    #AllowedPattern: "^[a-zA-z0-9-]*"
+    ConstraintDescription: "Must contain only letters, numbers, dashes and start with an alpha character"
+
+  stackregion:
+    Description: "Region for deploying the baseline template in the created account"
+    Default: "us-west-2"
+    Type: String
+    AllowedPattern: ".+"
+    AllowedValues: ["us-east-2","us-east-1","us-west-1","us-west-2","ap-northeast-1","ap-northeast-2","ap-northeast-3","ap-south-1","ap-southeast-1","ap-southeast-2","ca-central-1","cn-north-1","cn-northwest-1","eu-central-1","eu-west-1","eu-west-2","eu-west-3","sa-east-1"]
+    ConstraintDescription: "Must be a valid AWS region"
+
+  sourcebucket:
+    Description: "Bucket holding the baseline template file"
+    Type: String
+
+  baselinetemplate:
+    Description: "Baseline template to be deployed in the created account."
+    Type: String
+
+  AZ1Name:
+    Description: Availability Zone 1 Name in Region
+    Type: String
+    AllowedPattern: ".+"
+    AllowedValues: ["ap-south-1a","ap-south-1b","eu-west-3a","eu-west-3b","eu-west-3c","eu-west-2a","eu-west-2b","eu-west-2c","eu-west-1a","eu-west-1b","eu-west-1c","ap-northeast-3a","ap-northeast-2a","ap-northeast-2c","ap-northeast-1a","ap-northeast-1c","ap-northeast-1d","sa-east-1a","sa-east-1c","ca-central-1a","ca-central-1b","ap-southeast-1a","ap-southeast-1b","ap-southeast-1c","ap-southeast-2a","ap-southeast-2b","ap-southeast-2c","eu-central-1a","eu-central-1b","eu-central-1c","us-east-1a","us-east-1b","us-east-1c","us-east-1d","us-east-1e","us-east-1f","us-east-2a","us-east-2b","us-east-2c","us-west-1b","us-west-1c","us-west-2a","us-west-2b","us-west-2c"]
+
+  AZ2Name:
+    Description: Availability Zone 2 Name in Region
+    Type: String
+    AllowedPattern: ".+"
+    AllowedValues: ["ap-south-1a","ap-south-1b","eu-west-3a","eu-west-3b","eu-west-3c","eu-west-2a","eu-west-2b","eu-west-2c","eu-west-1a","eu-west-1b","eu-west-1c","ap-northeast-3a","ap-northeast-2a","ap-northeast-2c","ap-northeast-1a","ap-northeast-1c","ap-northeast-1d","sa-east-1a","sa-east-1c","ca-central-1a","ca-central-1b","ap-southeast-1a","ap-southeast-1b","ap-southeast-1c","ap-southeast-2a","ap-southeast-2b","ap-southeast-2c","eu-central-1a","eu-central-1b","eu-central-1c","us-east-1a","us-east-1b","us-east-1c","us-east-1d","us-east-1e","us-east-1f","us-east-2a","us-east-2b","us-east-2c","us-west-1b","us-west-1c","us-west-2a","us-west-2b","us-west-2c"]
+
+  VPCCIDR:
+    Description: CIDR block for the VPC
+    Type: String
+    Default: 10.229.0.0/16
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+
+  SubnetAPublicCIDR:
+    Description: CIDR block for the public subnet in availability zone
+    Type: String
+    Default: 10.229.10.0/24
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+
+  SubnetBPublicCIDR:
+    Description: CIDR block for the public subnet in availability zone
+    Type: String
+    Default: 10.229.20.0/24
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+
+  SubnetAPrivateCIDR:
+    Description: CIDR block for the private subnet in availability zone
+    Type: String
+    Default: 10.229.30.0/24
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+
+  SubnetBPrivateCIDR:
+    Description: CIDR block for the private subnet in availability zone
+    Type: String
+    Default: 10.229.40.0/24
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+
+  VPCName:
+    Description: Name for the VPC
+    Type: String
+    Default: Custom_VPC
+    ConstraintDescription: Provide the name for the VPC.
+
+Resources:
+  AccountBuilderLambda:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Handler: "AccountCreationLambda.main"
+      #Handler: "index.main"
+      Runtime: "python3.6"
+      Role: !GetAtt LambdaExecuteRole.Arn
+      Timeout: 600
+      TracingConfig:
+          Mode: "Active"
+      Code:
+        S3Bucket: !Ref sourcebucket
+        S3Key: "AccountCreationLambda.zip"
+      Environment:
+        Variables:
+          'accountemail' : !Ref accountemail
+          'accountname' : !Ref accountname
+          'newrolepolicy': !Ref newrolepolicy
+          'newrole': !Ref 'newrole'
+          'organizationunitname': !Ref 'organizationunitname'
+          'stackname' : !Ref stackname
+          'stackregion' : !Ref stackregion
+          'adminusername' : !Ref adminusername
+          'adminpassword' : !Ref adminpassword
+          'sourcebucket' : !Ref sourcebucket
+          'baselinetemplate': !Ref baselinetemplate
+          'AZ1Name' : !Ref AZ1Name
+          'AZ2Name' : !Ref AZ2Name
+          'VPCCIDR' : !Ref VPCCIDR
+          'SubnetAPublicCIDR' : !Ref SubnetAPublicCIDR
+          'SubnetBPublicCIDR' : !Ref SubnetBPublicCIDR
+          'SubnetAPrivateCIDR' : !Ref SubnetAPrivateCIDR
+          'SubnetBPrivateCIDR' : !Ref SubnetBPrivateCIDR
+          'VPCName' : !Ref VPCName
+
+
+  LambdaExecuteRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+      - PolicyName: LambdaAccessRole
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            Effect: Allow
+            Action: "*"
+            Resource: "*"
+
+  TriggerLambda:
+    Type: "Custom::TriggerLambda"
+    DeletionPolicy: Retain
+    DependsOn:
+    - AccountBuilderLambda
+    - LambdaExecuteRole
+    Properties:
+      ServiceToken: !GetAtt AccountBuilderLambda.Arn
+
+
+Outputs:
+  Message:
+    Description: Execution Status
+    Value: !GetAtt 'TriggerLambda.Message'
+
+  AccountID:
+    Description: ID of the new account
+    Value: !GetAtt 'TriggerLambda.AccountID'
+
+  Username:
+    Description: UserName to Login.
+    Value: !GetAtt 'TriggerLambda.Username'
+
+  LoginURL:
+    Description: Login url
+    Value: !GetAtt 'TriggerLambda.LoginURL'
+
+  # VPCStatus:
+  #   Description: Status of the new account default VPC
+  #   Value: !GetAtt 'TriggerNetworkLambda.VPCStatus'
+
+  # VPCId:
+  #   Description: VPC ID of the newly created VPC
+  #   Value: !GetAtt 'TriggerNetworkLambda.NewVPCId'
