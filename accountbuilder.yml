@@ -107,6 +107,7 @@ Parameters:
   stackname:
     Description: "Name given to the stack deployed in the created account."
     Type: String
+    AllowedPattern: ".+"
     #AllowedPattern: "^[a-zA-z0-9-]*"
     ConstraintDescription: "Must contain only letters, numbers, dashes and start with an alpha character"
 
@@ -121,10 +122,13 @@ Parameters:
   sourcebucket:
     Description: "Bucket holding the baseline template file"
     Type: String
+    AllowedPattern: ".+"
+
 
   baselinetemplate:
     Description: "Baseline template to be deployed in the created account."
     Type: String
+    AllowedPattern: ".+"
 
   AZ1Name:
     Description: Availability Zone 1 Name in Region
@@ -182,6 +186,7 @@ Parameters:
     Description: Name for the VPC
     Type: String
     Default: Custom_VPC
+    AllowedPattern: ".+"
     ConstraintDescription: Provide the name for the VPC.
 
 Resources:
